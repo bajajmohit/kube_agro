@@ -6,7 +6,7 @@ output "instance_id" {
 
 output "instance_public_ip" {
   description = "Public IP address of the EC2 instance"
-  value       = aws_eip.kube_master_eip.public_ip
+  value       = aws_instance.kube_master.public_ip
 }
 
 output "instance_private_ip" {
@@ -53,13 +53,13 @@ output "security_group_id" {
 # Access Information
 output "ssh_command" {
   description = "SSH command to connect to the instance (only if SSH key is configured)"
-  value       = var.public_key != "" ? "ssh -i <your-private-key> ec2-user@${aws_eip.kube_master_eip.public_ip}" : "SSH key not configured - use AWS Systems Manager Session Manager or EC2 Instance Connect"
+  value       = var.public_key != "" ? "ssh -i <your-private-key> ec2-user@${aws_instance.kube_master.public_ip}" : "SSH key not configured - use AWS Systems Manager Session Manager or EC2 Instance Connect"
 }
 
 output "argocd_access_info" {
   description = "Information for accessing ArgoCD"
   value = {
-    url      = "http://${aws_eip.kube_master_eip.public_ip}"
+    url      = "http://${aws_instance.kube_master.public_ip}"
     username = "admin"
     password = "Check /home/ec2-user/argocd-password.txt on the instance"
     port_forward = "kubectl port-forward svc/argocd-server -n argocd 8080:443"
@@ -69,10 +69,10 @@ output "argocd_access_info" {
 # Kubernetes Information
 output "kubectl_config_command" {
   description = "Command to configure kubectl locally (only if SSH key is configured)"
-  value       = var.public_key != "" ? "scp -i <your-private-key> ec2-user@${aws_eip.kube_master_eip.public_ip}:/home/ec2-user/.kube/config ~/.kube/config" : "SSH key not configured - use AWS Systems Manager Session Manager to access kubectl config"
+  value       = var.public_key != "" ? "scp -i <your-private-key> ec2-user@${aws_instance.kube_master.public_ip}:/home/ec2-user/.kube/config ~/.kube/config" : "SSH key not configured - use AWS Systems Manager Session Manager to access kubectl config"
 }
 
 output "setup_completion_check" {
   description = "Command to check if Kubernetes setup is complete (only if SSH key is configured)"
-  value       = var.public_key != "" ? "ssh -i <your-private-key> ec2-user@${aws_eip.kube_master_eip.public_ip} 'ls -la /home/ec2-user/kube-setup-complete'" : "SSH key not configured - use AWS Systems Manager Session Manager to check setup status"
+  value       = var.public_key != "" ? "ssh -i <your-private-key> ec2-user@${aws_instance.kube_master.public_ip} 'ls -la /home/ec2-user/kube-setup-complete'" : "SSH key not configured - use AWS Systems Manager Session Manager to check setup status"
 }

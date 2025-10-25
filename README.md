@@ -5,7 +5,7 @@ This Terraform configuration creates an EC2 instance with Kubernetes (kubeadm) a
 ## What's Included
 
 - **EC2 Instance**: Amazon Linux 2 with Kubernetes cluster initialized using kubeadm
-- **Networking**: VPC, public subnet, internet gateway, and security groups
+- **Networking**: Uses existing VPC, subnet, and internet gateway (no Elastic IP for home lab)
 - **Kubernetes**: Single-node cluster with Flannel CNI
 - **ArgoCD**: GitOps continuous delivery tool pre-installed and configured
 - **Security**: Proper security groups with required ports for Kubernetes and ArgoCD
@@ -124,6 +124,7 @@ Edit `terraform.tfvars` to customize:
 
 - **Single Node Cluster**: This creates a single-node Kubernetes cluster suitable for development/testing
 - **Setup Time**: Initial setup takes 5-10 minutes after instance launch
+- **Home Lab Setup**: No Elastic IP - uses dynamic public IP (may change on instance restart)
 - **Security**: The instance is publicly accessible - consider using VPN or bastion host for production
 - **Cost**: Monitor AWS costs as the instance runs continuously
 

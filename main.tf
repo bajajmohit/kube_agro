@@ -270,14 +270,3 @@ resource "aws_instance" "kube_master" {
   }
 }
 
-# Elastic IP for the instance
-resource "aws_eip" "kube_master_eip" {
-  instance = aws_instance.kube_master.id
-  domain   = "vpc"
-
-  tags = {
-    Name = "${var.project_name}-master-eip"
-  }
-
-  depends_on = [data.aws_internet_gateway.existing_igw]
-}
