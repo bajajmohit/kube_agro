@@ -13,11 +13,7 @@ internet_gateway_id = "igw-6098f609"
 instance_type = "t3.medium"  # Minimum recommended for Kubernetes
 volume_size = 20
 
-# SSH Public Key (OPTIONAL - leave empty to disable SSH key access)
-# Generate a key pair if you want SSH access:
-# ssh-keygen -t rsa -b 4096 -f ~/.ssh/kube-agro-key
-# Then copy the public key content here
-public_key = ""  # Leave empty to disable SSH key access
+# Note: Using existing key pair "kube_agro" - no SSH key configuration needed
 
 # Optional: Custom AMI ID
 # custom_ami_id = "ami-1234567890abcdef0"

@@ -43,12 +43,6 @@ variable "volume_size" {
   default     = 20
 }
 
-# SSH Key Configuration
-variable "public_key" {
-  description = "Public key for SSH access to EC2 instance (optional)"
-  type        = string
-  default     = ""
-}
 
 # Optional: Custom AMI
 variable "custom_ami_id" {

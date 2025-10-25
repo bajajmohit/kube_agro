@@ -15,7 +15,7 @@ This Terraform configuration creates an EC2 instance with Kubernetes (kubeadm) a
 1. **AWS CLI configured** with appropriate permissions
 2. **Terraform installed** (version >= 1.0)
 3. **Existing VPC and Subnet** in your AWS account
-4. **SSH key pair** (optional) for accessing the EC2 instance
+4. **Existing SSH key pair** named "kube_agro" in your AWS account
 
 ## Infrastructure Configuration
 
@@ -36,18 +36,14 @@ These resources are pre-configured and don't need to be specified in your `terra
    cd kube_agro
    ```
 
-2. **Generate SSH key pair** (optional - only if you want SSH access):
-   ```bash
-   ssh-keygen -t rsa -b 4096 -f ~/.ssh/kube-agro-key
-   ```
+2. **Ensure SSH key pair exists**: Make sure you have a key pair named "kube_agro" in your AWS account
 
 3. **Configure variables** (optional):
    ```bash
    cp terraform.tfvars.example terraform.tfvars
    # Edit terraform.tfvars to customize:
    # - Instance type, volume size, region
-   # - Optional: Your public key (leave empty to disable SSH access)
-   # Note: VPC, subnet, and IGW are already hardcoded
+   # Note: Uses existing key pair "kube_agro" - no SSH key configuration needed
    ```
 
 4. **Initialize and apply Terraform**:
@@ -62,11 +58,8 @@ These resources are pre-configured and don't need to be specified in your `terra
    # Get the public IP from terraform output
    terraform output instance_public_ip
    
-   # If SSH key is configured:
-   ssh -i ~/.ssh/kube-agro-key ec2-user@<public-ip>
-   
-   # If no SSH key, use AWS Systems Manager Session Manager:
-   aws ssm start-session --target <instance-id>
+   # SSH into the instance using the kube_agro key pair
+   ssh -i ~/.ssh/kube_agro ec2-user@<public-ip>
    
    # Check if setup is complete
    ls -la /home/ec2-user/kube-setup-complete
@@ -85,11 +78,8 @@ http://<public-ip>
 
 ### Method 2: Port Forward (Recommended)
 ```bash
-# If SSH key is configured:
-ssh -i ~/.ssh/kube-agro-key ec2-user@<public-ip>
-
-# If no SSH key, use AWS Systems Manager Session Manager:
-aws ssm start-session --target <instance-id>
+# SSH into the instance using the kube_agro key pair
+ssh -i ~/.ssh/kube_agro ec2-user@<public-ip>
 
 # Port forward ArgoCD
 kubectl port-forward svc/argocd-server -n argocd 8080:443
@@ -115,7 +105,6 @@ Edit `terraform.tfvars` to customize:
 - None (all infrastructure IDs are hardcoded)
 
 ### Optional Variables:
-- `public_key`: SSH public key (leave empty to disable SSH access)
 - `instance_type`: EC2 instance type (default: t3.medium)
 - `volume_size`: Root volume size (default: 20GB)
 - `aws_region`: AWS region (default: us-west-2)
@@ -132,15 +121,10 @@ Edit `terraform.tfvars` to customize:
 
 ### Check Setup Status
 ```bash
-# If SSH key is configured:
-ssh -i ~/.ssh/kube-agro-key ec2-user@<public-ip>
+# SSH into the instance using the kube_agro key pair
+ssh -i ~/.ssh/kube_agro ec2-user@<public-ip>
 sudo journalctl -u kubelet -f  # Check kubelet logs
 kubectl get pods --all-namespaces  # Check pod status
-
-# If no SSH key, use AWS Systems Manager Session Manager:
-aws ssm start-session --target <instance-id>
-sudo journalctl -u kubelet -f
-kubectl get pods --all-namespaces
 ```
 
 ### Common Issues
