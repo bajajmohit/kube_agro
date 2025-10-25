@@ -14,8 +14,8 @@ This Terraform configuration creates an EC2 instance with Kubernetes (kubeadm) a
 
 1. **AWS CLI configured** with appropriate permissions
 2. **Terraform installed** (version >= 1.0)
-3. **SSH key pair** for accessing the EC2 instance
-4. **Existing VPC and Subnet** in your AWS account
+3. **Existing VPC and Subnet** in your AWS account
+4. **SSH key pair** (optional) for accessing the EC2 instance
 
 ## Finding Your Existing VPC and Subnet IDs
 
@@ -46,7 +46,7 @@ aws ec2 describe-internet-gateways --query 'InternetGateways[*].[InternetGateway
    cd kube_agro
    ```
 
-2. **Generate SSH key pair** (if you don't have one):
+2. **Generate SSH key pair** (optional - only if you want SSH access):
    ```bash
    ssh-keygen -t rsa -b 4096 -f ~/.ssh/kube-agro-key
    ```
@@ -57,7 +57,7 @@ aws ec2 describe-internet-gateways --query 'InternetGateways[*].[InternetGateway
    # Edit terraform.tfvars and add:
    # - Your VPC ID
    # - Your subnet ID  
-   # - Your public key
+   # - Optional: Your public key (leave empty to disable SSH access)
    # - Optional: Internet Gateway ID
    ```
 
@@ -73,8 +73,11 @@ aws ec2 describe-internet-gateways --query 'InternetGateways[*].[InternetGateway
    # Get the public IP from terraform output
    terraform output instance_public_ip
    
-   # SSH into the instance
+   # If SSH key is configured:
    ssh -i ~/.ssh/kube-agro-key ec2-user@<public-ip>
+   
+   # If no SSH key, use AWS Systems Manager Session Manager:
+   aws ssm start-session --target <instance-id>
    
    # Check if setup is complete
    ls -la /home/ec2-user/kube-setup-complete
@@ -93,8 +96,11 @@ http://<public-ip>
 
 ### Method 2: Port Forward (Recommended)
 ```bash
-# SSH into the instance
+# If SSH key is configured:
 ssh -i ~/.ssh/kube-agro-key ec2-user@<public-ip>
+
+# If no SSH key, use AWS Systems Manager Session Manager:
+aws ssm start-session --target <instance-id>
 
 # Port forward ArgoCD
 kubectl port-forward svc/argocd-server -n argocd 8080:443
@@ -120,9 +126,9 @@ Edit `terraform.tfvars` to customize:
 ### Required Variables:
 - `vpc_id`: Your existing VPC ID
 - `subnet_id`: Your existing subnet ID  
-- `public_key`: Your SSH public key
 
 ### Optional Variables:
+- `public_key`: SSH public key (leave empty to disable SSH access)
 - `internet_gateway_id`: Custom IGW ID (leave empty for default)
 
 ## Important Notes
@@ -136,9 +142,15 @@ Edit `terraform.tfvars` to customize:
 
 ### Check Setup Status
 ```bash
+# If SSH key is configured:
 ssh -i ~/.ssh/kube-agro-key ec2-user@<public-ip>
 sudo journalctl -u kubelet -f  # Check kubelet logs
 kubectl get pods --all-namespaces  # Check pod status
+
+# If no SSH key, use AWS Systems Manager Session Manager:
+aws ssm start-session --target <instance-id>
+sudo journalctl -u kubelet -f
+kubectl get pods --all-namespaces
 ```
 
 ### Common Issues

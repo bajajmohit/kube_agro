@@ -43,9 +43,9 @@ variable "volume_size" {
 
 # SSH Key Configuration
 variable "public_key" {
-  description = "Public key for SSH access to EC2 instance"
+  description = "Public key for SSH access to EC2 instance (optional)"
   type        = string
-  # You can provide this via terraform.tfvars or environment variable
+  default     = ""
 }
 
 # Optional: Custom AMI

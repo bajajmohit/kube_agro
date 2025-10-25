@@ -134,8 +134,9 @@ resource "aws_security_group" "kube_master_sg" {
   }
 }
 
-# Key Pair for SSH access
+# Key Pair for SSH access (only if public_key is provided)
 resource "aws_key_pair" "kube_key" {
+  count      = var.public_key != "" ? 1 : 0
   key_name   = "${var.project_name}-key"
   public_key = var.public_key
 
@@ -249,7 +250,7 @@ locals {
 resource "aws_instance" "kube_master" {
   ami                    = data.aws_ami.amazon_linux.id
   instance_type          = var.instance_type
-  key_name               = aws_key_pair.kube_key.key_name
+  key_name               = var.public_key != "" ? aws_key_pair.kube_key[0].key_name : null
   vpc_security_group_ids = [aws_security_group.kube_master_sg.id]
   subnet_id              = data.aws_subnet.existing_subnet.id
   user_data              = base64encode(local.user_data)
