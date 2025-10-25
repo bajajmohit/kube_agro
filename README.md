@@ -17,26 +17,16 @@ This Terraform configuration creates an EC2 instance with Kubernetes (kubeadm) a
 3. **Existing VPC and Subnet** in your AWS account
 4. **SSH key pair** (optional) for accessing the EC2 instance
 
-## Finding Your Existing VPC and Subnet IDs
+## Infrastructure Configuration
 
-Before deploying, you need to identify your existing VPC and subnet IDs:
+This configuration uses hardcoded AWS infrastructure resources:
 
-### Using AWS CLI:
-```bash
-# List all VPCs
-aws ec2 describe-vpcs --query 'Vpcs[*].[VpcId,CidrBlock,Tags[?Key==`Name`].Value|[0]]' --output table
+- **VPC ID**: `vpc-2dc2d444`
+- **Subnet ID**: `subnet-5f25ec37` 
+- **Internet Gateway ID**: `igw-6098f609`
+- **Route Table ID**: `rtb-cf9378a7`
 
-# List all subnets
-aws ec2 describe-subnets --query 'Subnets[*].[SubnetId,CidrBlock,AvailabilityZone,Tags[?Key==`Name`].Value|[0]]' --output table
-
-# List internet gateways (optional)
-aws ec2 describe-internet-gateways --query 'InternetGateways[*].[InternetGatewayId,Tags[?Key==`Name`].Value|[0]]' --output table
-```
-
-### Using AWS Console:
-1. Go to **VPC Dashboard** in AWS Console
-2. Note down your **VPC ID** and **Subnet ID**
-3. Ensure the subnet has internet access (check route table)
+These resources are pre-configured and don't need to be specified in your `terraform.tfvars` file.
 
 ## Quick Start
 
@@ -51,14 +41,13 @@ aws ec2 describe-internet-gateways --query 'InternetGateways[*].[InternetGateway
    ssh-keygen -t rsa -b 4096 -f ~/.ssh/kube-agro-key
    ```
 
-3. **Configure variables**:
+3. **Configure variables** (optional):
    ```bash
    cp terraform.tfvars.example terraform.tfvars
-   # Edit terraform.tfvars and add:
-   # - Your VPC ID
-   # - Your subnet ID  
+   # Edit terraform.tfvars to customize:
+   # - Instance type, volume size, region
    # - Optional: Your public key (leave empty to disable SSH access)
-   # - Optional: Internet Gateway ID
+   # Note: VPC, subnet, and IGW are already hardcoded
    ```
 
 4. **Initialize and apply Terraform**:
@@ -120,16 +109,16 @@ Edit `terraform.tfvars` to customize:
 - **AWS Region**: Change `aws_region` (default: us-west-2)
 - **Instance Type**: Modify `instance_type` (default: t3.medium)
 - **Volume Size**: Adjust `volume_size` (default: 20GB)
-- **Existing Infrastructure**: Specify your VPC and subnet IDs
-- **Internet Gateway**: Optional custom IGW ID
+- **Infrastructure**: Uses hardcoded VPC, subnet, and IGW IDs
 
 ### Required Variables:
-- `vpc_id`: Your existing VPC ID
-- `subnet_id`: Your existing subnet ID  
+- None (all infrastructure IDs are hardcoded)
 
 ### Optional Variables:
 - `public_key`: SSH public key (leave empty to disable SSH access)
-- `internet_gateway_id`: Custom IGW ID (leave empty for default)
+- `instance_type`: EC2 instance type (default: t3.medium)
+- `volume_size`: Root volume size (default: 20GB)
+- `aws_region`: AWS region (default: us-west-2)
 
 ## Important Notes
 
