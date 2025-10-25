@@ -53,7 +53,7 @@ output "security_group_id" {
 # Access Information
 output "ssh_command" {
   description = "SSH command to connect to the instance"
-  value       = "ssh -i ~/.ssh/kube_agro ec2-user@${aws_instance.kube_master.public_ip}"
+  value       = "ssh -i ~/.ssh/kube_agro ubuntu@${aws_instance.kube_master.public_ip}"
 }
 
 output "argocd_access_info" {
@@ -61,7 +61,7 @@ output "argocd_access_info" {
   value = {
     url      = "http://${aws_instance.kube_master.public_ip}"
     username = "admin"
-    password = "Check /home/ec2-user/argocd-password.txt on the instance"
+    password = "Check /home/ubuntu/argocd-password.txt on the instance"
     port_forward = "kubectl port-forward svc/argocd-server -n argocd 8080:443"
   }
 }
@@ -69,10 +69,10 @@ output "argocd_access_info" {
 # Kubernetes Information
 output "kubectl_config_command" {
   description = "Command to configure kubectl locally"
-  value       = "scp -i ~/.ssh/kube_agro ec2-user@${aws_instance.kube_master.public_ip}:/home/ec2-user/.kube/config ~/.kube/config"
+  value       = "scp -i ~/.ssh/kube_agro ubuntu@${aws_instance.kube_master.public_ip}:/home/ubuntu/.kube/config ~/.kube/config"
 }
 
 output "setup_completion_check" {
   description = "Command to check if Kubernetes setup is complete"
-  value       = "ssh -i ~/.ssh/kube_agro ec2-user@${aws_instance.kube_master.public_ip} 'ls -la /home/ec2-user/kube-setup-complete'"
+  value       = "ssh -i ~/.ssh/kube_agro ubuntu@${aws_instance.kube_master.public_ip} 'ls -la /home/ubuntu/kube-setup-complete'"
 }

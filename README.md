@@ -4,7 +4,7 @@ This Terraform configuration creates an EC2 instance with Kubernetes (kubeadm) a
 
 ## What's Included
 
-- **EC2 Instance**: Amazon Linux 2 with Kubernetes cluster initialized using kubeadm
+- **EC2 Instance**: Ubuntu 22.04 LTS with Kubernetes cluster initialized using kubeadm
 - **Networking**: Uses existing VPC, subnet, and internet gateway (no Elastic IP for home lab)
 - **Kubernetes**: Single-node cluster with Flannel CNI
 - **ArgoCD**: GitOps continuous delivery tool pre-installed and configured
@@ -59,10 +59,10 @@ These resources are pre-configured and don't need to be specified in your `terra
    terraform output instance_public_ip
    
    # SSH into the instance using the kube_agro key pair
-   ssh -i ~/.ssh/kube_agro ec2-user@<public-ip>
+   ssh -i ~/.ssh/kube_agro ubuntu@<public-ip>
    
    # Check if setup is complete
-   ls -la /home/ec2-user/kube-setup-complete
+   ls -la /home/ubuntu/kube-setup-complete
    ```
 
 ## Accessing ArgoCD
@@ -79,7 +79,7 @@ http://<public-ip>
 ### Method 2: Port Forward (Recommended)
 ```bash
 # SSH into the instance using the kube_agro key pair
-ssh -i ~/.ssh/kube_agro ec2-user@<public-ip>
+ssh -i ~/.ssh/kube_agro ubuntu@<public-ip>
 
 # Port forward ArgoCD
 kubectl port-forward svc/argocd-server -n argocd 8080:443
@@ -90,7 +90,7 @@ https://localhost:8080
 
 ### ArgoCD Login Credentials
 - **Username**: `admin`
-- **Password**: Check `/home/ec2-user/argocd-password.txt` on the instance
+- **Password**: Check `/home/ubuntu/argocd-password.txt` on the instance
 
 ## Configuration Options
 
@@ -122,13 +122,13 @@ Edit `terraform.tfvars` to customize:
 ### Check Setup Status
 ```bash
 # SSH into the instance using the kube_agro key pair
-ssh -i ~/.ssh/kube_agro ec2-user@<public-ip>
+ssh -i ~/.ssh/kube_agro ubuntu@<public-ip>
 sudo journalctl -u kubelet -f  # Check kubelet logs
 kubectl get pods --all-namespaces  # Check pod status
 ```
 
 ### Common Issues
-1. **Setup incomplete**: Wait a few more minutes and check `/home/ec2-user/kube-setup-complete`
+1. **Setup incomplete**: Wait a few more minutes and check `/home/ubuntu/kube-setup-complete`
 2. **ArgoCD not accessible**: Ensure security group allows ports 80/443
 3. **SSH connection refused**: Check security group allows port 22
 

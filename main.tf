@@ -13,14 +13,14 @@ provider "aws" {
   region = var.aws_region
 }
 
-# Data source to get the latest Amazon Linux 2 AMI
-data "aws_ami" "amazon_linux" {
+# Data source to get the latest Ubuntu 22.04 LTS AMI
+data "aws_ami" "ubuntu" {
   most_recent = true
-  owners      = ["amazon"]
+  owners      = ["099720109477"] # Canonical
 
   filter {
     name   = "name"
-    values = ["amzn2-ami-hvm-*-x86_64-gp2"]
+    values = ["ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-server-*"]
   }
 
   filter {
@@ -138,13 +138,13 @@ resource "aws_security_group" "kube_master_sg" {
 locals {
   user_data = <<-EOF
     #!/bin/bash
-    yum update -y
+    apt update -y
     
     # Install Docker
-    yum install -y docker
+    apt install -y docker.io
     systemctl start docker
     systemctl enable docker
-    usermod -a -G docker ec2-user
+    usermod -a -G docker ubuntu
     
     # Install kubectl
     curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
@@ -152,23 +152,11 @@ locals {
     mv kubectl /usr/local/bin/
     
     # Install kubeadm, kubelet, kubectl
-    cat <<REPOEOF > /etc/yum.repos.d/kubernetes.repo
-    [kubernetes]
-    name=Kubernetes
-    baseurl=https://pkgs.k8s.io/core:/stable:/v1.28/rpm/
-    enabled=1
-    gpgcheck=1
-    gpgkey=https://pkgs.k8s.io/core:/stable:/v1.28/rpm/repodata/repomd.xml.key
-    exclude=kubelet kubeadm kubectl cri-tools kubernetes-cni
-    REPOEOF
-    
-    # Set SELinux in permissive mode
-    setenforce 0
-    sed -i 's/^SELINUX=enforcing$/SELINUX=permissive/' /etc/selinux/config
-    
-    # Install kubelet, kubeadm, kubectl
-    yum install -y kubelet kubeadm kubectl --disableexcludes=kubernetes
-    systemctl enable kubelet
+    curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.28/deb/Release.key | gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+    echo 'deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.28/deb/ /' | tee /etc/apt/sources.list.d/kubernetes.list
+    apt update -y
+    apt install -y kubelet kubeadm kubectl
+    apt-mark hold kubelet kubeadm kubectl
     
     # Configure containerd
     mkdir -p /etc/containerd
@@ -191,10 +179,10 @@ locals {
     # Initialize Kubernetes cluster
     kubeadm init --pod-network-cidr=10.244.0.0/16 --apiserver-advertise-address=$(curl -s http://169.254.169.254/latest/meta-data/local-ipv4)
     
-    # Configure kubectl for ec2-user
-    mkdir -p /home/ec2-user/.kube
-    cp -i /etc/kubernetes/admin.conf /home/ec2-user/.kube/config
-    chown ec2-user:ec2-user /home/ec2-user/.kube/config
+    # Configure kubectl for ubuntu user
+    mkdir -p /home/ubuntu/.kube
+    cp -i /etc/kubernetes/admin.conf /home/ubuntu/.kube/config
+    chown ubuntu:ubuntu /home/ubuntu/.kube/config
     
     # Install Flannel CNI
     kubectl apply -f https://raw.githubusercontent.com/flannel-io/flannel/master/Documentation/kube-flannel.yml
@@ -208,8 +196,8 @@ locals {
     
     # Get ArgoCD admin password
     ARGOCD_PASSWORD=$(kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d)
-    echo "ArgoCD admin password: $ARGOCD_PASSWORD" > /home/ec2-user/argocd-password.txt
-    chown ec2-user:ec2-user /home/ec2-user/argocd-password.txt
+    echo "ArgoCD admin password: $ARGOCD_PASSWORD" > /home/ubuntu/argocd-password.txt
+    chown ubuntu:ubuntu /home/ubuntu/argocd-password.txt
     
     # Install ArgoCD CLI
     curl -sSL -o argocd-linux-amd64 https://github.com/argoproj/argo-cd/releases/latest/download/argocd-linux-amd64
@@ -217,27 +205,27 @@ locals {
     rm argocd-linux-amd64
     
     # Create a simple script to access ArgoCD
-    cat <<SCRIPTEOF > /home/ec2-user/access-argocd.sh
+    cat <<SCRIPTEOF > /home/ubuntu/access-argocd.sh
     #!/bin/bash
     echo "ArgoCD is accessible at: http://$(curl -s http://169.254.169.254/latest/meta-data/public-ipv4)"
-    echo "Admin password: \$(cat /home/ec2-user/argocd-password.txt)"
+    echo "Admin password: \$(cat /home/ubuntu/argocd-password.txt)"
     echo ""
     echo "To port-forward ArgoCD locally:"
     echo "kubectl port-forward svc/argocd-server -n argocd 8080:443"
     echo "Then access: https://localhost:8080"
     SCRIPTEOF
-    chmod +x /home/ec2-user/access-argocd.sh
-    chown ec2-user:ec2-user /home/ec2-user/access-argocd.sh
+    chmod +x /home/ubuntu/access-argocd.sh
+    chown ubuntu:ubuntu /home/ubuntu/access-argocd.sh
     
     # Signal completion
-    touch /home/ec2-user/kube-setup-complete
-    chown ec2-user:ec2-user /home/ec2-user/kube-setup-complete
+    touch /home/ubuntu/kube-setup-complete
+    chown ubuntu:ubuntu /home/ubuntu/kube-setup-complete
   EOF
 }
 
 # EC2 Instance for Kubernetes Master Node
 resource "aws_instance" "kube_master" {
-  ami                    = data.aws_ami.amazon_linux.id
+  ami                    = data.aws_ami.ubuntu.id
   instance_type          = var.instance_type
   key_name               = "kube_agro"
   vpc_security_group_ids = [aws_security_group.kube_master_sg.id]
