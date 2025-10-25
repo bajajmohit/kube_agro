@@ -162,7 +162,7 @@ locals {
     mv kubectl /usr/local/bin/
     
     # Install kubeadm, kubelet, kubectl
-    cat <<EOF > /etc/yum.repos.d/kubernetes.repo
+    cat <<REPOEOF > /etc/yum.repos.d/kubernetes.repo
     [kubernetes]
     name=Kubernetes
     baseurl=https://pkgs.k8s.io/core:/stable:/v1.28/rpm/
@@ -170,7 +170,7 @@ locals {
     gpgcheck=1
     gpgkey=https://pkgs.k8s.io/core:/stable:/v1.28/rpm/repodata/repomd.xml.key
     exclude=kubelet kubeadm kubectl cri-tools kubernetes-cni
-    EOF
+    REPOEOF
     
     # Set SELinux in permissive mode
     setenforce 0
@@ -187,11 +187,11 @@ locals {
     systemctl enable containerd
     
     # Configure sysctl
-    cat <<EOF > /etc/sysctl.d/k8s.conf
+    cat <<SYSCTLEOF > /etc/sysctl.d/k8s.conf
     net.bridge.bridge-nf-call-ip6tables = 1
     net.bridge.bridge-nf-call-iptables = 1
     net.ipv4.ip_forward = 1
-    EOF
+    SYSCTLEOF
     sysctl --system
     
     # Load br_netfilter module
@@ -227,7 +227,7 @@ locals {
     rm argocd-linux-amd64
     
     # Create a simple script to access ArgoCD
-    cat <<EOF > /home/ec2-user/access-argocd.sh
+    cat <<SCRIPTEOF > /home/ec2-user/access-argocd.sh
     #!/bin/bash
     echo "ArgoCD is accessible at: http://$(curl -s http://169.254.169.254/latest/meta-data/public-ipv4)"
     echo "Admin password: \$(cat /home/ec2-user/argocd-password.txt)"
@@ -235,7 +235,7 @@ locals {
     echo "To port-forward ArgoCD locally:"
     echo "kubectl port-forward svc/argocd-server -n argocd 8080:443"
     echo "Then access: https://localhost:8080"
-    EOF
+    SCRIPTEOF
     chmod +x /home/ec2-user/access-argocd.sh
     chown ec2-user:ec2-user /home/ec2-user/access-argocd.sh
     
