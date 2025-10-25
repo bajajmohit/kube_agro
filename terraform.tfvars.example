@@ -4,16 +4,10 @@ aws_region = "us-west-2"
 # Project Configuration
 project_name = "kube-agro"
 
-# Existing Infrastructure Configuration (REQUIRED)
-# Get these values from your AWS Console or CLI:
-# aws ec2 describe-vpcs --query 'Vpcs[*].[VpcId,CidrBlock,Tags[?Key==`Name`].Value|[0]]' --output table
-# aws ec2 describe-subnets --query 'Subnets[*].[SubnetId,CidrBlock,AvailabilityZone,Tags[?Key==`Name`].Value|[0]]' --output table
-vpc_id = "vpc-12345678"  # Replace with your existing VPC ID
-subnet_id = "subnet-12345678"  # Replace with your existing subnet ID
-
-# Internet Gateway (optional - leave empty if VPC has default IGW)
-# aws ec2 describe-internet-gateways --query 'InternetGateways[*].[InternetGatewayId,Tags[?Key==`Name`].Value|[0]]' --output table
-internet_gateway_id = ""  # Optional: specify if you have a custom IGW
+# Existing Infrastructure Configuration (HARDCODED)
+vpc_id = "vpc-2dc2d444"
+subnet_id = "subnet-5f25ec37"
+internet_gateway_id = "igw-6098f609"
 
 # EC2 Configuration
 instance_type = "t3.medium"  # Minimum recommended for Kubernetes

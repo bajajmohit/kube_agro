@@ -39,9 +39,8 @@ data "aws_subnet" "existing_subnet" {
   id = var.subnet_id
 }
 
-# Data source to get existing internet gateway (if any)
+# Data source to get existing internet gateway
 data "aws_internet_gateway" "existing_igw" {
-  count = var.internet_gateway_id != "" ? 1 : 0
   internet_gateway_id = var.internet_gateway_id
 }
 

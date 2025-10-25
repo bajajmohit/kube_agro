@@ -15,17 +15,19 @@ variable "project_name" {
 variable "vpc_id" {
   description = "ID of the existing VPC to use"
   type        = string
+  default     = "vpc-2dc2d444"
 }
 
 variable "subnet_id" {
   description = "ID of the existing subnet to use"
   type        = string
+  default     = "subnet-5f25ec37"
 }
 
 variable "internet_gateway_id" {
-  description = "ID of the existing internet gateway (optional, leave empty if VPC has default IGW)"
+  description = "ID of the existing internet gateway"
   type        = string
-  default     = ""
+  default     = "igw-6098f609"
 }
 
 # EC2 Configuration
